@@ -1,0 +1,123 @@
+---
+title: "Homework 4: 音乐对生产力提升的研究"
+author:
+  - 2151294 马威
+documentclass: ctexart
+geometry: "left=2.5cm, right=2cm, top=3cm, bottom=1cm"
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+# 研究问题和假设
+## 背景
+一个在线零售商希望提高员工的工作效率，同时改善他们的工作体验。目前，零售商
+订单管理中心的员工在工作时没有得到任何形式的娱乐，如背景音乐、电视等。零售商想
+知道提供一些员工要求的播放背景音乐是否会提高生产力，如果能提高，具体能提高多
+少。
+
+## 现有研究
+随机抽取 150 名员工。随机分为三组，每组50名参与者：
+
+- **对照组（control group）：** 不听音乐
+- **治疗组（treatment group）：** 听音乐，但不能选择听什么
+- **第二个治疗组（treatment group）：** 听音乐，可以自主选择听什么音乐。
+
+在实验结束时，三组的“生产力”是根据“每小时处理的平均包裹数量”来衡量。
+
+## 研究问题
+1. 这三组之间的生产力是否存在统计学上的显著差异？
+2. 两两来看，组之间的生产力是否有区别？哪个组具有最高的生产力水平？
+
+## 研究假设
+1. 音乐对生产力有显著影响，且适当的娱乐放松会提高生产力。
+2. 生产力水平预测为：治疗组B（可选音乐）> 治疗组A（不可选音乐）> 对照组（无音乐）
+
+# 数据分析方法选择
+1. 对于音乐这个因素对于生产力这个观测值的影响，适合使用单因素方差分析法：因变量是“生产力”，而解释变量是“分组”。
+2. 对于三组生产力水平的排序，由于先前经过了方差分析，可以使用TokeyHSD进行有修正的两两显著性检验，并在有显著性的组对中进行单侧均值假设检验来进行比较。
+
+# 基础分析
+```{r basic analysis, results='hold'}
+# 装载必要的包
+library(ggplot2)
+
+# 清除当前镜像中的数据
+rm(list = ls())
+
+# 读取数据
+music.data <- read.csv("2 ANOVA_data_music.csv")
+
+# 取三组的生产力数据
+no_music <- music.data[music.data$condition == "no_music",][["productivity"]]
+music_no_choice <- music.data[music.data$condition == "music_no_choice",][["productivity"]]
+music_choice <- music.data[music.data$condition == "music_choice",][["productivity"]]
+
+# 进行基本分析
+sum1 <- summary(no_music)
+sum2 <- summary(music_no_choice)
+sum3 <- summary(music_choice)
+
+# 显示分析结果
+print("summary of no_music:")
+print(sum1)
+print("summary of music_no_choice")
+print(sum2)
+print("summary of music_choice")
+print(sum3)
+
+# 就平均数和中位数来看，治疗组A略微高于对照组，但治疗组B显著高于其余两组。
+# 不过，音乐是否真的对生产力有显著影响，还需进行单因素方差分析。
+```
+```{r basic analysis continue}
+# 图示三组分布情况
+ggplot(music.data, aes(x = productivity)) +
+  geom_histogram(fill = "white", color = "black", binwidth = 10) +
+  facet_grid(condition~.)
+```
+
+# 主要分析
+```{r}
+# 音乐对生产力影响的单因素方差分析
+# H0：影响不显著
+# H1：影响显著
+fit <- aov(productivity~condition, data = music.data)
+summary(fit)
+
+# 两两之间比较显著性（有修正）
+TukeyHSD(fit)
+
+# 两两之间比较：对照组、治疗组B
+# H0：治疗组B <= 对照组
+# H1：治疗组B > 对照组
+comp.test1 <- t.test(music_choice, no_music, alternative = "greater")
+print(comp.test1$p.value)
+
+# 两两之间比较：治疗组A、治疗组B
+# H0：治疗组B <= 治疗组A
+# H1：治疗组B > 治疗组A
+comp.test2 <- t.test(music_choice, music_no_choice, alternative = "greater")
+print(comp.test2$p.value)
+```
+# 分析结果解读
+## 音乐对于生产力影响：
+p-value = 0.000159 < 0.05，拒绝H0，即认为音乐对于生产力影响显著
+
+## 三组生产力水平显著性比较：
+
+- **治疗组A、治疗组B：** p adj = 0.00155 < 0.05，拒绝H0，即认为两组有显著差异
+- **对照组、治疗组B：** p adj = 0.00042 < 0.05，拒绝H0，即认为两组有显著差异
+- **对照组、治疗组A：** p adj = 0.93913 > 0.05，无法拒绝H0，即无法认为两组有显著差异
+
+## 三组生产力水平比较：
+
+- **对照组、治疗组B：** p-value = 0.000165 < 0.05，拒绝H0，即认为治疗组B均值高于对照组均值
+- **治疗组A、治疗组B：** p-value = 0.000165 < 0.05，拒绝H0，即认为治疗组B均值高于治疗组A均值
+
+## 总结
+1. 音乐对于生产力影响显著
+2. 三组的生产力水平：对照组 = 治疗组A < 治疗组B
+3. 先前假设中关于音乐对生产力影响显著的假设正确，但没有足够证据证明关于三组生产力水平的假设，因为对照组和治疗组A的显著性没有足够的证据证明存在。
+4. 但总而言之，治疗组B不但均值显著大于对照组和治疗组A，而且经过假设检验，总体水平也高于这两个组，因此有理由认为治疗组B有最高的生产力水平。

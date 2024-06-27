@@ -1,0 +1,31 @@
+---
+title: "第11题"
+author:
+  - 2151294马威
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+```{r}
+# 对学院和上课时间进行双因素方差分析
+x <- c(85, 87, 92, 82, 84, 89, 78, 76, 93, 95, 92, 95)
+college <- c(rep("软件学院", 3), rep("汽车学院", 3), rep("电信学院", 3), rep("数学学院", 3))
+time <- c(rep(c("上午", "下午", "晚上"), 4))
+dat <- data.frame(x = x, college = college, time = time)
+fit <- aov(x ~ time + college, data = dat)
+summary(fit)
+# 可知，上课时间无显著差异，学院有显著差异
+
+# 两个p数值的计算
+p1 <- 1 - pf(5.094, 2, 6)
+p2 <- 1 - pf(5.287, 3, 6)
+cat(
+  "p1: ", p1, "\n",
+  "p2: ", p2, "\n",
+  sep = ""
+)
+```

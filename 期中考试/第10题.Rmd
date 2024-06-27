@@ -1,0 +1,29 @@
+---
+title: "问题10"
+author:
+  - 2151294马威
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+```{r}
+library(ggplot2)
+data1 <- rnorm(100, 0, 1)
+data2 <- rnorm(100, 2, 1)
+data <- data.frame(data1 = data1, data2 = data2)
+
+ggplot(data, aes(x = data1, y = after_stat(density))) +
+  geom_histogram(fill = "cornsilk", color = "grey30", binwidth = 0.5) +
+  geom_line(stat = "density", adjust = 1.5, color = "blue", linewidth = 1) +
+  labs(x = "data1")
+
+ggplot(data, aes(x = data2, y = after_stat(density))) +
+  geom_histogram(fill = "cornsilk", color = "grey30", binwidth = 0.5) +
+  geom_line(stat = "density", adjust = 1.5, color = "blue", linewidth = 1) +
+  labs(x = "data2")
+```
+
